@@ -3,8 +3,8 @@ import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/materi
 import Link from "next/link"
 
 export default function signUpPage(){
-    return <Container maxWidth="sm">
-        <AppBar position="static" sx={{backgroundColor: "#3f51b5"}}>
+    return <Container maxWidth="100vw">
+        <AppBar position="static" >
             <Toolbar>
                 <Typography variant="h6" sx={{flexGrow: 1}}>
                     Flashcard SaaS

@@ -53,9 +53,10 @@ export default function Generate(){
             alert('user is not signed in')
         }
 
-        const batch = writeBatch(db)
+        
         const userDocRef = doc(collection(db, 'users'), user.id)
         const docSnap = await getDoc(userDocRef)
+        const batch = writeBatch(db)
 
         if(docSnap.exists()){
             const collections = docSnap.data().flashcards || []
@@ -63,8 +64,8 @@ export default function Generate(){
                 alert('Flashcard collection with the same name already exists.')
                 return
             } else {
-                collections.push(name)
-                batch.set(userDocRef, {flashcards: collection}, {merge: true})
+                collections.push({name})
+                batch.set(userDocRef, {flashcards: collections}, {merge: true})
             }
         } else {
             batch.set(userDocRef, {flashcards: [{name}]})

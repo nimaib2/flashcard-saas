@@ -1,10 +1,11 @@
 'use client'
 
 import { useUser } from "@clerk/nextjs"
-import { Box, Button, Card, CardActionArea, CardContent, Container, Grid, Paper, TextField, Typography } from "@mui/material"
-import { collection, writeBatch } from "firebase/firestore"
+import { db } from "@/firebase"
+import { Box, Button, Card, CardActionArea, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Paper, TextField, Typography } from "@mui/material"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { doc, collection, getDoc, setDoc, writeBatch} from 'firebase/firestore'
 
 export default function Generate(){
     const {isLoaded, isSignedIn, user} = useUser()
@@ -23,6 +24,13 @@ export default function Generate(){
         .then((data)=>setFlashcards(data))
     }
 
+    const handleCardClick = (id) => {
+        setFlipped((prev) => ({
+            ...prev,
+            [id]: !prev[id]
+        }))
+    }
+
     const handleOpen = () => {
         setOpen(true)
     }
@@ -35,6 +43,14 @@ export default function Generate(){
         if(!name){
             alert('Please enter a name')
             return
+        }
+
+        if(!isLoaded){
+            alert('User is not loaded')
+        }
+
+        if(!isSignedIn){
+            alert('user is not signed in')
         }
 
         const batch = writeBatch(db)
@@ -54,7 +70,7 @@ export default function Generate(){
             batch.set(userDocRef, {flashcards: [{name}]})
         }
 
-        const columnRef = collection(userDocRef, name)
+        const colRef = collection(userDocRef, name)
         flashcards.forEach((flashcard) => {
             const cardDocRef = doc(colRef)
             batch.set(cardDocRef, flashcard)
@@ -138,8 +154,6 @@ export default function Generate(){
                                                         {flashcard.front}
                                                     </Typography>
                                                 </div>
-                                            </div>
-                                            <div>
                                                 <div>
                                                     <Typography variant="h5" component="div">
                                                         {flashcard.back}
@@ -154,7 +168,36 @@ export default function Generate(){
 
                     ))}
                 </Grid>
+                <Box sx={{mt:4, display: 'flex', justifyContent: 'center'}}>
+                    <Button variant="contained" color='secondary' onClick={handleOpen}>
+                        Save
+                    </Button>
+                </Box>
             </Box>
         )}
+
+        <Dialog open={open} onClose={handleClose}>
+            <DialogTitle> Save Flashcards</DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    Please enter a name for your flashcards collection
+                </DialogContentText>
+                <TextField 
+                autoFocus 
+                margin="dense" 
+                label="Collection name" 
+                type="text" 
+                fullWidth 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                variant="outlined"/>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleClose}>Cancel</Button>
+                <Button onClick={saveFlashcards}>
+                    Save
+                </Button>
+            </DialogActions>
+        </Dialog>
     </Container>
 }   
